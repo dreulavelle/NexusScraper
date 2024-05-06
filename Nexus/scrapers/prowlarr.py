@@ -1,54 +1,75 @@
+from types import SimpleNamespace
+
 import requests
-from utils.exceptions import NexusException
-from . import settings
+
+from Nexus.exceptions import ProwlarrException
+from Nexus.models import Guids, NexusSettings, ScrapeResult
 
 
 class Prowlarr:
     """Prowlarr class for Prowlarr API operations."""
 
-    def __init__(self):
-        self.api_key = settings.prowlarr_apikey.get_secret_value()
+    def __init__(self, settings: NexusSettings):
+        if not settings.prowlarr_url or not settings.prowlarr_apikey != 32:
+            raise ProwlarrException("Prowlarr: URL and API key are required.")
+
+        self.api_key = settings.prowlarr_apikey
         self.base_url = settings.prowlarr_url
         self.session = requests.Session()
-        self.session.headers.update({"X-Api-Key": self.api_key})
+        self.session.headers.update({"Authorization": f"Bearer {self.api_key}"})
 
-    def _request(self, endpoint, method="GET", params=None, data=None):
-        url = f"{self.base_url}/api/v1/{endpoint}"
+    def _request(self, endpoint, method="GET", params=None, data=None, timeout=60):
+        if endpoint.startswith("/"):
+            url = f"{self.base_url}{endpoint}"
+        else:
+            url = f"{self.base_url}/api/v1/{endpoint}"
         try:
-            response = self.session.request(method, url, params=params, json=data)
-            response.raise_for_status()  # Raises error for 4xx/5xx responses
+            response = self.session.request(method, url, params=params, json=data, timeout=timeout)
+            response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
-            raise NexusException(f"API request error: {e}")
+            raise ProwlarrException(f"Prowlarr: API request error: {str(e)}")
 
-    def scrape(self, query):
+    def scrape(self, query, media_type = None, limit = 50, timeout = 60) -> list[ScrapeResult]:
         """Scrape Prowlarr for a given query."""
-        return self._request("indexer/search", params={"query": query})
+        if not isinstance(limit, int):
+            raise ProwlarrException("Prowlarr: Limit must be an integer.")
 
-    def get_indexers(self):
-        """Retrieve a list of configured indexers."""
-        return self._request("indexer")
+        if query.startswith("tt"):
+            return []
 
-    def get_system_status(self):
-        """Get the system status."""
-        return self._request("system/status")
+        data = self._request("search", params={"categories": [2000, 5000], "query": query, "limit": limit}, timeout=timeout)
+        if not data:
+            return []
 
-    def get_indexer(self, indexer_id):
-        """Retrieve a single indexer by ID."""
-        return self._request(f"indexer/{indexer_id}")
+        container = [SimpleNamespace(**result) for result in data]
 
-    def test_indexer(self, indexer_id):
-        """Test a single indexer by ID."""
-        return self._request(f"indexer/test/{indexer_id}")
+        results = []
+        for result in container:
+            try:
+                guids = Guids(
+                    imdb_id=result.imdbId if result.imdbId != 0 else None,
+                    tmdb_id=result.tmdbId if result.tmdbId != 0 else None,
+                    tvdb_id=result.tvdbId if result.tvdbId != 0 else None,
+                )
+                scrape_result = ScrapeResult(
+                    raw_title=result.title,
+                    infohash=result.infoHash,
+                    guids=guids,
+                    media_type=result.categories[0].get("name", None),
+                    source="prowlarr",
+                    size=result.size,
+                    seeders=result.seeders,
+                    leechers=result.leechers,
+                )
+                results.append(scrape_result)
+            except AttributeError:
+                continue
 
-    def get_indexer_presets(self):
-        """Get indexer presets."""
-        return self._request("indexer/presets")
+        if not results:
+            return []
+        return results
 
-    def add_indexer(self, indexer_config):
-        """Add a new indexer with the given configuration."""
-        return self._request("indexer", method="POST", data=indexer_config)
-
-    def delete_indexer(self, indexer_id):
-        """Delete an indexer by ID."""
-        return self._request(f"indexer/{indexer_id}", method="DELETE")
+    def ping(self):
+        """Ping the Prowlarr API."""
+        return self._request("/ping")
