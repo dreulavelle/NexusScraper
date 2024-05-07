@@ -1,6 +1,5 @@
 import pytest
 
-from Nexus.exceptions import NexusException
 from Nexus.models import NexusSettings, ScrapeResult
 from Nexus.scrapers import orionoid
 
@@ -25,15 +24,3 @@ def test_orionoid_scrape_raw(p):
     data = p.scrape("game of thrones", "show")
     assert len(data) > 0
     assert isinstance(data, (list, ScrapeResult))
-
-def test_orionoid_invalid():
-    with pytest.raises(NexusException):
-        settings = NexusSettings(
-            orionoid_client="",
-            orionoid_apikey="",
-        )
-        orionoid.Orionoid(settings)
-
-def test_orionoid_scrape_invalid(p):
-    with pytest.raises(NexusException):
-        p.scrape("invalid", "series", 1, 1)

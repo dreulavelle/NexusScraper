@@ -17,8 +17,6 @@ class Orionoid:
         self.client_id = settings.orionoid_client
         self.api_key = settings.orionoid_apikey
         self.is_premium = False
-        self.max_calls = 100
-        self.period = 86400  # 24 hours for non-premium users
         self.is_initialized = False
         self.session = requests.Session()
         self.check_api_key_validity()
@@ -29,15 +27,15 @@ class Orionoid:
         try:
             response = self.session.get(url, timeout=60)
         except requests.exceptions.ReadTimeout as e:
-            raise OrionoidException(f"API request timed out: {str(e)}")
+            raise requests.exceptions.ReadTimeout(f"API request timed out: {str(e)}")
+        except requests.exceptions.ConnectTimeout as e:
+            raise requests.exceptions.ConnectTimeout(f"API request timed out: {str(e)}")
         if response.status_code != 200:
             raise OrionoidException(f"API key validation failed with status code {response.status_code}")
 
         data = response.json()
         if data.get('result', {}).get('status') == 'success' and data.get('data', {}).get('status') == 'active':
             self.is_premium = data['data']['subscription']['package']['premium']
-            self.max_calls = 1000 if self.is_premium else 100
-            self.period = 3600 if self.is_premium else 86400
             self.is_initialized = True
         else:
             raise OrionoidException("Failed to initialize Orionoid due to invalid API key or account status.")
