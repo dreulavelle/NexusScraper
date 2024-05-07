@@ -1,15 +1,15 @@
 import requests
 
 from Nexus.exceptions import TorrentioException
-from Nexus.models import Guids, ScrapeResult
+from Nexus.models import Guids, NexusSettings, ScrapeResult
 
 
 class Torrentio:
     """Torrentio class for Torrent API operations."""
 
-    def __init__(self, url: str = "https://torrentio.strem.fun", filters: str = "qualityfilter=other,scr,cam"):
-        self.base_url = url
-        self.filters = filters
+    def __init__(self, settings: NexusSettings):
+        self.base_url = settings.torrentio_url
+        self.filters = settings.torrentio_filters
         self.session = requests.Session()
 
     def _request(self, endpoint: str):
@@ -18,26 +18,25 @@ class Torrentio:
             response = self.session.get(url, timeout=10)
             response.raise_for_status()
             return response.json()
+        except requests.exceptions.ReadTimeout as e:
+            raise TorrentioException(f"API request timed out: {e}")
         except requests.exceptions.RequestException as e:
-            raise TorrentioException(f"Torrentio: API request error: {e}")
+            raise TorrentioException(f"API request error: {e}")
 
-    def scrape(self, imdbid: str, media_type: str = "", season: int = 9999, episode: int = 9999, limit: int = 50) -> list[ScrapeResult]:
+    def scrape(self, imdbid: str, media_type: str = "", season: int = 9999, episode: int = 9999) -> list[ScrapeResult]:
         """Scrape Torrentio for a given query."""
         if not imdbid:
-            raise TorrentioException("Torrentio: IMDB ID is required.")
-
+            raise TorrentioException("IMDB ID is required.")
         if not imdbid.startswith("tt"):
-            raise TorrentioException("Torrentio: Invalid IMDB ID.")
-
+            raise TorrentioException("Invalid IMDB ID.")
         if not media_type:
-            raise TorrentioException("Torrentio: Media type is required.")
+            raise TorrentioException("Media type is required.")
+        if media_type not in ["movie", "show"]:
+            raise TorrentioException("Invalid media type. Must be 'movie' or 'show'.")
 
         # lets de-normalize it here
         if media_type.lower() == "show":
             media_type = "series"
-
-        if media_type not in ["movie", "series"]:
-            raise TorrentioException("Invalid media type. Must be 'movie' or 'show'.")
 
         endpoint = f"stream/movie/{imdbid}"
         if media_type.lower() == "series" and season != 9999 and episode != 9999:

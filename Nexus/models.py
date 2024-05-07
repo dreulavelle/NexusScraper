@@ -24,6 +24,9 @@ class NexusSettings(BaseSettings):
     prowlarr_apikey: Optional[str] = None
     orionoid_client: Optional[str] = None
     orionoid_apikey: Optional[str] = None
+    torrentio_url: Optional[str] = "https://torrentio.strem.fun"
+    torrentio_filters: Optional[str] = "qualityfilter=other,scr,cam"
+    annatar_url: Optional[str] = "http://annatar.elfhosted.com"
 
     model_config = {
         "env_file": ".env",
@@ -52,9 +55,9 @@ class Guids(BaseModel):
     - `tmdb_id`: Optional[str] - TMDb identifier
     - `tvdb_id`: Optional[str] - TVDb identifier
     """
-    imdb_id: Optional[str]
-    tmdb_id: Optional[int]
-    tvdb_id: Optional[int]
+    imdb_id: Optional[str] = None
+    tmdb_id: Optional[int] = None
+    tvdb_id: Optional[int] = None
 
     @field_validator("imdb_id", mode="before")
     def validate_imdb(cls, v):
@@ -96,7 +99,7 @@ class ScrapeResult(BaseModel):
     def validate_infohash(cls, v):
         if not v or not isinstance(v, str) or len(v) != 40:
             raise NexusInvalidInfohash("Valid Infohash is required.")
-        return v
+        return v.upper()
 
     @field_validator("source")
     def validate_source(cls, v):
@@ -107,8 +110,12 @@ class ScrapeResult(BaseModel):
 
     @field_validator("media_type")
     def validate_media_type(cls, v):
-        v = v.split("/")[0].lower()
+        if not v or not isinstance(v, str):
+            return None
+
+        v = v.split("/")[0].lower() # cleanup torznab categories
         match v:
+            # Need to standardize the media types across the board
             case "tv" | "show" | "series" | "episode" | "ep" | "season":
                 return "show"
             case _:

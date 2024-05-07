@@ -1,27 +1,26 @@
 import pytest
 
-from Nexus.exceptions import TorrentioException
+from Nexus.exceptions import AnnatarException
 from Nexus.models import NexusSettings, ScrapeResult
-from Nexus.scrapers import torrentio
+from Nexus.scrapers import annatar
 
 
 @pytest.fixture
 def p():
     settings = NexusSettings()
-    return torrentio.Torrentio(settings)
+    return annatar.Annatar(settings)
 
-def test_torrentio_movie(p):
+def test_annatar_movie(p):
     assert isinstance(p.base_url, str)
-    assert isinstance(p.filters, str)
     data = p.scrape("tt0113497", "movie")
     assert len(data) > 0
     assert isinstance(data, (list, ScrapeResult))
 
-def test_torrentio_episode(p):
+def test_annatar_episode(p):
     data = p.scrape("tt0944947", "show", 2, 4)
     assert len(data) > 0
     assert isinstance(data, (list, ScrapeResult))
 
-def test_torrentio_invalid(p):
-    with pytest.raises(TorrentioException):
-        p.scrape("", "")
+def test_annatar_invalid(p):
+    with pytest.raises(AnnatarException):
+        p.scrape("game of thrones")

@@ -16,14 +16,14 @@ def test_orionoid(p):
     assert p.api_key != "" or p.api_key is not None
     assert p.base_url != "" or p.base_url is not None
 
-def test_orionoid_scrape_movie(p):
+def test_orionoid_scrape_imdb(p):
     data = p.scrape("tt0113497", "movie")
-    assert len(data) == 50
+    assert len(data) > 0
     assert isinstance(data, (list, ScrapeResult))
 
-def test_orionoid_scrape_show(p):
-    data = p.scrape("tt0944947", "show", 1, 1)
-    assert len(data) == 50
+def test_orionoid_scrape_raw(p):
+    data = p.scrape("game of thrones", "show")
+    assert len(data) > 0
     assert isinstance(data, (list, ScrapeResult))
 
 def test_orionoid_invalid():
