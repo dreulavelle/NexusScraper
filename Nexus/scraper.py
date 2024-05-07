@@ -79,7 +79,7 @@ class NexusScrapers:
         results = []
         workers = len(self.raw_scrapers)
         with concurrent.futures.ThreadPoolExecutor(thread_name_prefix="Nexus Raw Scrape", max_workers=workers) as executor:
-            scrape_tasks = {executor.submit(self.scrape, query, source, **kwargs): source for source in self.raw_scrapers}
+            scrape_tasks = {executor.submit(self.scrape, query, source, **kwargs): source for source in self.raw_scrapers if not None}
             for future in concurrent.futures.as_completed(scrape_tasks):
                 source = scrape_tasks[future]
                 try:
@@ -106,7 +106,7 @@ class NexusScrapers:
         results = []
         workers = len(self.imdb_scrapers)
         with concurrent.futures.ThreadPoolExecutor(thread_name_prefix="Nexus IMDB Scrape", max_workers=workers) as executor:
-            scrape_tasks = {executor.submit(self.scrape, query, source, **kwargs): source for source in self.imdb_scrapers}
+            scrape_tasks = {executor.submit(self.scrape, query, source, **kwargs): source for source in self.imdb_scrapers if not None}
             for future in concurrent.futures.as_completed(scrape_tasks):
                 source = scrape_tasks[future]
                 try:

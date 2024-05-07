@@ -10,6 +10,9 @@ class Orionoid:
     """Orionoid class for Orionoid API operations."""
 
     def __init__(self, settings: NexusSettings):
+        if not settings.orionoid_client or not settings.orionoid_apikey:
+            return
+
         self.base_url = "https://api.orionoid.com"
         self.client_id = settings.orionoid_client
         self.api_key = settings.orionoid_apikey
