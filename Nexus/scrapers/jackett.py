@@ -11,7 +11,8 @@ class Jackett:
     def __init__(self, settings: NexusSettings):
         self.settings = settings
         if not self.settings.jackett_url or not self.settings.jackett_apikey:
-            raise JackettException("URL and API key are required.")
+            return
+        
         self.base_url = self.settings.jackett_url
         self.api_key = self.settings.jackett_apikey
         self.session = requests.Session()

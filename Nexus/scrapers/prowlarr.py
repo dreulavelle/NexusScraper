@@ -11,7 +11,7 @@ class Prowlarr:
 
     def __init__(self, settings: NexusSettings):
         if not settings.prowlarr_url or not settings.prowlarr_apikey:
-            raise ProwlarrException("URL and API key are required.")
+            return
         if len(settings.prowlarr_apikey) != 32:
             raise ProwlarrException("API key must be 32 characters long.")
 

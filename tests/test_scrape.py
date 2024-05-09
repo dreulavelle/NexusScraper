@@ -14,7 +14,7 @@ def p():
 
 def test_scrape(p):
     time_start = time.time()
-    data = p.scrape("torrentio", "tt0113497", media_type="movie")
+    data = p.scrape("tt0113497", "torrentio", media_type="movie")
     duration = time.time() - time_start
     print(f"Scrape duration: {duration:.3f} seconds")
     assert len(data) > 0

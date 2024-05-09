@@ -1,6 +1,5 @@
 import pytest
 
-from Nexus.exceptions import ProwlarrException
 from Nexus.models import NexusSettings, ScrapeResult
 from Nexus.scrapers import prowlarr
 
@@ -24,11 +23,3 @@ def test_scrape(p):
 def test_ping(p):
     data = p.ping()
     assert isinstance(data, dict)
-
-def test_invalid_prowlarr():
-    with pytest.raises(ProwlarrException):
-        settings = NexusSettings(
-            prowlarr_url="",
-            prowlarr_apikey="",
-        )
-        prowlarr.Prowlarr(settings)

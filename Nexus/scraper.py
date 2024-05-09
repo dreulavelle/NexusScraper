@@ -52,13 +52,9 @@ class NexusScrapers:
             raise NexusException("Query cannot be empty")
 
         if source not in self.scrapers:
-            if query.startswith("tt"):
-                return self.imdb_scrapers["torrentio"].scrape(query, **kwargs)
-            else:
-                return self.raw_scrapers["torbox"].scrape(query, **kwargs)
-        if query.startswith("tt"):
-            return self.imdb_scrapers[source].scrape(query, **kwargs)
-        return self.raw_scrapers[source].scrape(query, **kwargs)
+            raise NexusException("Invalid source")
+        
+        return self.scrapers[source].scrape(query, **kwargs)
 
     def scrape_raw(self, query="", **kwargs) -> List[ScrapeResult]:
         """
