@@ -3,14 +3,14 @@ import time
 import pytest
 
 from Nexus.models import NexusSettings, ScrapeResult
-from Nexus.scraper import NexusScrapers
+from Nexus.scraper import Nexus
 from Nexus.scrapers.torrentio import Torrentio
 
 
 @pytest.fixture
 def p():
     settings = NexusSettings()
-    return NexusScrapers(settings)
+    return Nexus(settings)
 
 def test_scrape(p):
     time_start = time.time()
@@ -38,7 +38,7 @@ def test_scrape_raw(p):
 
 def test_get_sources(p):
     sources = p.get_sources()
-    assert len(sources) == 6
+    assert len(sources) == 7
     assert isinstance(sources, list)
 
 def test_get_scraper(p):

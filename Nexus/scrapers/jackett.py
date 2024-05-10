@@ -16,6 +16,7 @@ class Jackett:
         self.base_url = self.settings.jackett_url
         self.api_key = self.settings.jackett_apikey
         self.session = requests.Session()
+        self.session.headers.update({'Connection': 'keep-alive'})
 
     def _request(self, endpoint, method="GET", params=None, data=None, timeout=60):
         """Private method to handle API requests."""

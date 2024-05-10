@@ -62,7 +62,7 @@ class Guids(BaseModel):
     @field_validator("imdb_id", mode="before")
     def validate_imdb(cls, v):
         """Validate and format the IMDb ID."""
-        if v == 0 or v is None:
+        if not v:
             return None
         elif isinstance(v, str) and v.startswith("tt"):
             return v

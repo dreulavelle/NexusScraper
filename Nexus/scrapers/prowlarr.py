@@ -85,11 +85,11 @@ class Prowlarr:
     def _get_rarbg_hash(self, guid_url: str) -> str:
         try:
             response = self.session.get(guid_url, timeout=15)
-            response.raise_for_status()  # Ensure proper handling of HTTP errors.
+            response.raise_for_status()
             return response.json().get("info_hash", "")
         except Exception:
             return ""
 
     def ping(self):
         """Ping the Prowlarr API."""
-        return self._request("/ping")
+        return self._request("/ping", timeout=15)

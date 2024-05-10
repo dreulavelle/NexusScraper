@@ -24,3 +24,6 @@ class TorBoxException(NexusException):
 
 class TorrentioException(NexusException):
     """Custom exception for Torrentio API errors."""
+
+class ApibayException(NexusException):
+    """Custom exception for Apibay API errors."""

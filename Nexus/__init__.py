@@ -30,11 +30,12 @@ for result in results:
 This will search for torrents matching the query "ubuntu" on Torrentio and print the results.
 """
 
-import Nexus
 from Nexus import exceptions, models, scraper
 from Nexus.models import NexusSettings, ScrapeResult
+from Nexus.scraper import Nexus
 from Nexus.scrapers import (
     annatar,
+    apibay,
     jackett,
     orionoid,
     prowlarr,
@@ -56,5 +57,6 @@ __all__ = [
     "orionoid",
     "prowlarr",
     "torbox",
-    "torrentio"
+    "torrentio",
+    "apibay"
 ]
